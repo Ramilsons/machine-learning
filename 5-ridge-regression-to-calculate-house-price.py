@@ -34,7 +34,7 @@ modelRegression = LinearRegression();
 modelRegression.fit(x_train, y_train);
 resultRegression = modelRegression.score(x_test, y_test);
 
-modelRidgeRegression = Ridge(alpha=1); # Change the alpha (0 - infinite) to change result. Alpha 0 is equal regression without ridge. But you can change to verify which value improve your result.
+modelRidgeRegression = Ridge(alpha=50); # Change the alpha (0 - infinite) to change result. Alpha 0 is equal regression without ridge. But you can change to verify which value improve your result.
 modelRidgeRegression.fit(x_train, y_train);
 resultRidgeRegression = modelRidgeRegression.score(x_test, y_test);
 
