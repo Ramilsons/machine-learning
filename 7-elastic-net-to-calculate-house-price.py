@@ -39,5 +39,5 @@ modelElasticNet.fit(x_train, y_train);
 resultModelElasticNet = modelElasticNet.score(x_test, y_test);
 
 print('**************************************');
-print("Linear Regression Result:");
+print("Elastic Net Result:");
 print(resultModelElasticNet); # Close to 1 is the better result
