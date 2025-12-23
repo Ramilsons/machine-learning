@@ -49,5 +49,22 @@ def regressionModels():
 
     print('**************************************');
     print('Regressão Linear: ', regResult, 'Regressão Ridge: ', ridgeResult, 'Regressão Lasso: ', lassoResult, 'Regressão Elastic: ', elasticResult);
+    print('**************************************');
+
+    # Simulate a real student to show chance of admit after apply the model
+    simulateStudent = pd.DataFrame([{
+        'GRE Score': 325,
+        'TOEFL Score': 110,
+        'University Rating': 4,
+        'SOP': 4.5,
+        'LOR ': 4.0,
+        'CGPA': 9.1,
+        'Research': 1
+    }]);
+
+    predict = reg.predict(simulateStudent);
+    print('Student Chance of Admit: ', predict[0]);
+
 
 regressionModels();
+
