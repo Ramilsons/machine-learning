@@ -1,7 +1,10 @@
 import pandas as pd;
+import numpy as np;
 from sklearn.model_selection import StratifiedKFold;
 from sklearn.model_selection import cross_val_score;
+from sklearn.model_selection import GridSearchCV;
 from sklearn.linear_model import LogisticRegression;
+
 
 pd.set_option('display.max_columns', 64);
 file = pd.read_csv('././data-sets/Data_train_reduced.csv');
@@ -35,10 +38,23 @@ x = file.drop('Instant.Liking', axis = 1);
 
 stratifiedKFold = StratifiedKFold(n_splits = 5);
 
+# Add Values to Test
+cValues = np.array([0.01, 0.1, 0.5, 1, 2, 3, 5, 10, 20, 50, 100]);
+regValues = ['l1', 'l2'];
+
+gridValues = {'C': cValues, 'penalty': regValues}
+
 # Create the Model
-model = LogisticRegression(penalty = 'l2', solver = 'liblinear');
+model = LogisticRegression(solver = 'liblinear');
 result = cross_val_score(model, x, y, cv = stratifiedKFold);
+
+gridLogisticRegression = GridSearchCV(estimator = model,  param_grid = gridValues, cv=5);
+gridLogisticRegression.fit(x, y);
 
 
 # Showing the Accuracy (Result of Model)
 print('Result: ', result.mean());
+
+print('Best Accuracy', gridLogisticRegression.best_score_);
+print('Best Parameter C', gridLogisticRegression.best_estimator_.C);
+print('Best Regularization', gridLogisticRegression.best_estimator_.penalty);
