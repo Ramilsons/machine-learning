@@ -13,3 +13,5 @@ bests_pedicts = algorithm.fit_transform(x, y)
 # Results
 print('Scores: ', algorithm.scores_);
 print('Transform Result:\n', bests_pedicts); # Dataset apenas com as features selecionadas, removeu a feature que não influenciava no resultado
+
+# Obs: QUI-QUADRADO só funciona para valores POSITIVOS. Para casos onde há valores negátivos, utilizar o F Classif (ela trabalha tanto positivos quanto negativos)
