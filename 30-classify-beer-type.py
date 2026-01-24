@@ -4,7 +4,7 @@
 # 5) Remover variaveis se elas são correlatas OK
 # 6) Remover variavel se não fizer sentido OK
 # 7) Verificar se existem outliers OK
-# 8) Aplicar maxClassifier pra padronizar os dados pro KNN
+# 8) Aplicar MinMaxScaler pra padronizar os dados pro KNN OK
 # 9) Dividir dados de treino e teste em Kfold
 # 10) Aplicar gridSearchCv pra testar diferentes parametros
 # 11) Criar função com diversos modelos de classificação
@@ -13,8 +13,10 @@
 import pandas as pd;
 import seaborn as sns;
 import matplotlib.pyplot as plt;
-from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import f_classif
+from sklearn.feature_selection import SelectKBest;
+from sklearn.feature_selection import f_classif;
+from sklearn.preprocessing import MinMaxScaler;
+
 
 pd.set_option('display.max_columns', 24);
 pd.set_option('display.max_rows', None);
@@ -119,3 +121,8 @@ bests_pedicts = algorithm.fit_transform(x, y)
 # Showing the relavance column score (quanto maior melhor)
 for col, score in zip(x.columns, algorithm.scores_):
     print(f"Variável: {col:20} | Score: {score:.4f}")
+
+
+# Normalizing the data (avoiding outliers)
+normalizer = MinMaxScaler(feature_range = (0, 1));
+x_normalized = normalizer.fit_transform(x);
