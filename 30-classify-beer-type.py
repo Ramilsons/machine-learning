@@ -1,6 +1,6 @@
 # 2) Remover classes que não tiverem pelo menos 1000 amostras OK
 # 3) Verificar se o tipo das variaveis são numericos. Se não, transforma em numerico com one hot encoding OK
-# 4) Dados missing - preencher com media ou mediana em casos de falta de preenchimento
+# 4) Dados missing - preencher com media ou mediana em casos de falta de preenchimento OK
 # 5) Remover variaveis se elas são correlatas OK
 # 6) Remover variavel se não fizer sentido OK
 # 7) Verificar se existem outliers
@@ -13,6 +13,8 @@
 import pandas as pd;
 import seaborn as sns;
 import matplotlib.pyplot as plt;
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import f_classif
 
 pd.set_option('display.max_columns', 24);
 pd.set_option('display.max_rows', None);
@@ -39,21 +41,17 @@ def encode_binary_columns():
         if file_filtered[col].nunique() == 2:
             labels = file_filtered[col].unique()
             file_filtered[col] = file_filtered[col].map({labels[0]: 0, labels[1]: 1})
-            print(f"Coluna '{col}' convertida: {labels[0]}->0, {labels[1]}->1");
+            # print(f"Coluna '{col}' convertida: {labels[0]}->0, {labels[1]}->1");
 
 encode_binary_columns();
 
-# Percent of data missing
-percentOfDataMissingEachColumn = (file_filtered.isnull().sum() / file.shape[0]) * 100;
-print(percentOfDataMissingEachColumn);
-
 # Showing the correlations between columns
 numeric_data = file_filtered.select_dtypes(include=['number']);
-print(numeric_data.corr());
+# print(numeric_data.corr());
 
 plt.figure(figsize=(10,10));
 sns.heatmap(numeric_data.corr());
-plt.show();
+# plt.show();
 
 # Removing cases with correlation a lot
 file_filtered.drop('FG', axis = 1, inplace = True);
@@ -67,21 +65,47 @@ file_filtered.drop('BeerID', axis = 1, inplace = True);
 file_filtered.drop('UserId', axis = 1, inplace = True);
 file_filtered.drop('Name', axis = 1, inplace = True);
 file_filtered.drop('URL', axis = 1, inplace = True);
+file_filtered.drop('Style', axis = 1, inplace = True);
 
+# Percent of data missing
+percentOfDataMissingEachColumn = (file_filtered.isnull().sum() / file.shape[0]) * 100;
+print(percentOfDataMissingEachColumn);
+
+# MashThickness > use average
+# PitchRate > use average
+# PrimaryTemp > use average
+# PrimingMethod > remove (muito poluída, com diferentes formatos e muito NA)
+# PrimingAmount > remove (muito poluída, com diferentes formatos e muito NA)
+
+file_filtered["MashThickness"] = file_filtered["MashThickness"].fillna(file_filtered["MashThickness"].mean());
+file_filtered["PrimaryTemp"] = file_filtered["PrimaryTemp"].fillna(file_filtered["PrimaryTemp"].mean());
+file_filtered["PitchRate"] = file_filtered["PitchRate"].fillna(file_filtered["PitchRate"].mean());
+
+file_filtered.drop('PrimingAmount', axis = 1, inplace = True);
+file_filtered.drop('PrimingMethod', axis = 1, inplace = True);
+
+percentOfDataMissingEachColumn = (file_filtered.isnull().sum() / file.shape[0]) * 100;
+print(percentOfDataMissingEachColumn);
 
 # tranforming the other columns that it isn't a binary column into one hot enconding
 def enconde_one_hot():
-    columns_target = ['Style', 'BrewMethod', 'PrimingMethod', 'PrimingAmount']
+    columns_target = ['BrewMethod']
 
-    area_encode = pd.get_dummies(file_filtered, columns=columns_target);
-    concat = pd.concat([file_filtered, area_encode], axis = 1);
-
-    concat.drop('Style', axis = 1, inplace = True);
-    concat.drop('BrewMethod', axis = 1, inplace = True);
-    concat.drop('PrimingMethod', axis = 1, inplace = True);
-    concat.drop('PrimingAmount', axis = 1, inplace = True);
-
-    return concat;
+    area_encode = pd.get_dummies(file_filtered, columns=columns_target, drop_first=True);
+    return area_encode;
 
 new_file_after_one_hot_enconding = enconde_one_hot();
-# print(new_file_after_one_hot_enconding.dtypes)
+
+
+# Defining Predict Values and Target
+x = new_file_after_one_hot_enconding.drop("StyleID", axis = 1);
+y = new_file_after_one_hot_enconding["StyleID"];
+
+
+algorithm =  SelectKBest(score_func= f_classif, k = 5);
+bests_pedicts = algorithm.fit_transform(x, y)
+
+# Results
+# Showing the relavance column score (quanto maior melhor)
+for col, score in zip(x.columns, algorithm.scores_):
+    print(f"Variável: {col:20} | Score: {score:.4f}")
