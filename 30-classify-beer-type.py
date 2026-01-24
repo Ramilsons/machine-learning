@@ -1,8 +1,8 @@
 # 2) Remover classes que não tiverem pelo menos 1000 amostras OK
 # 3) Verificar se o tipo das variaveis são numericos. Se não, transforma em numerico com one hot encoding OK
 # 4) Dados missing - preencher com media ou mediana em casos de falta de preenchimento
-# 5) Remover variaveis se elas são correlatas
-# 6) Remover variavel se não fizer sentido
+# 5) Remover variaveis se elas são correlatas OK
+# 6) Remover variavel se não fizer sentido OK
 # 7) Verificar se existem outliers
 # 8) Aplicar maxClassifier pra padronizar os dados pro KNN
 # 9) Dividir dados de treino e teste em Kfold
@@ -11,6 +11,8 @@
 # 12) Testar melhor acurácia 
 
 import pandas as pd;
+import seaborn as sns;
+import matplotlib.pyplot as plt;
 
 pd.set_option('display.max_columns', 24);
 pd.set_option('display.max_rows', None);
@@ -45,15 +47,35 @@ encode_binary_columns();
 percentOfDataMissingEachColumn = (file_filtered.isnull().sum() / file.shape[0]) * 100;
 print(percentOfDataMissingEachColumn);
 
+# Showing the correlations between columns
+numeric_data = file_filtered.select_dtypes(include=['number']);
+print(numeric_data.corr());
+
+plt.figure(figsize=(10,10));
+sns.heatmap(numeric_data.corr());
+plt.show();
+
+# Removing cases with correlation a lot
+file_filtered.drop('FG', axis = 1, inplace = True);
+file_filtered.drop('SugarScale', axis = 1, inplace = True);
+file_filtered.drop('BoilSize', axis = 1, inplace = True);
+file_filtered.drop('BoilGravity', axis = 1, inplace = True);
+
+
+# Removing irrelevants columns
+file_filtered.drop('BeerID', axis = 1, inplace = True); 
+file_filtered.drop('UserId', axis = 1, inplace = True);
+file_filtered.drop('Name', axis = 1, inplace = True);
+file_filtered.drop('URL', axis = 1, inplace = True);
+
+
 # tranforming the other columns that it isn't a binary column into one hot enconding
 def enconde_one_hot():
-    columns_target = ['Name', 'URL', 'Style', 'BrewMethod', 'PrimingMethod', 'PrimingAmount']
+    columns_target = ['Style', 'BrewMethod', 'PrimingMethod', 'PrimingAmount']
 
     area_encode = pd.get_dummies(file_filtered, columns=columns_target);
     concat = pd.concat([file_filtered, area_encode], axis = 1);
 
-    concat.drop('Name', axis = 1, inplace = True);
-    concat.drop('URL', axis = 1, inplace = True);
     concat.drop('Style', axis = 1, inplace = True);
     concat.drop('BrewMethod', axis = 1, inplace = True);
     concat.drop('PrimingMethod', axis = 1, inplace = True);
@@ -62,4 +84,4 @@ def enconde_one_hot():
     return concat;
 
 new_file_after_one_hot_enconding = enconde_one_hot();
-#print(new_file_after_one_hot_enconding.dtypes)
+# print(new_file_after_one_hot_enconding.dtypes)
