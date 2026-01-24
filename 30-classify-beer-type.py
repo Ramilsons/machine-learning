@@ -5,10 +5,10 @@
 # 6) Remover variavel se não fizer sentido OK
 # 7) Verificar se existem outliers OK
 # 8) Aplicar MinMaxScaler pra padronizar os dados pro KNN OK
-# 9) Dividir dados de treino e teste em Kfold
-# 10) Aplicar gridSearchCv pra testar diferentes parametros
-# 11) Criar função com diversos modelos de classificação
-# 12) Testar melhor acurácia 
+# 9) Dividir dados de treino e teste em Kfold OK
+# 10) Aplicar gridSearchCv pra testar diferentes parametros 
+# 11) Criar função com diversos modelos de classificação OK
+# 12) Testar melhor acurácia  OK
 
 import pandas as pd;
 import seaborn as sns;
@@ -16,6 +16,12 @@ import matplotlib.pyplot as plt;
 from sklearn.feature_selection import SelectKBest;
 from sklearn.feature_selection import f_classif;
 from sklearn.preprocessing import MinMaxScaler;
+from sklearn.model_selection import KFold;
+from sklearn.model_selection import cross_val_score;
+from sklearn.linear_model import LogisticRegression;
+from sklearn.neighbors import KNeighborsClassifier;
+from sklearn.naive_bayes import GaussianNB; 
+from sklearn.tree import DecisionTreeClassifier; 
 
 
 pd.set_option('display.max_columns', 24);
@@ -126,3 +132,55 @@ for col, score in zip(x.columns, algorithm.scores_):
 # Normalizing the data (avoiding outliers)
 normalizer = MinMaxScaler(feature_range = (0, 1));
 x_normalized = normalizer.fit_transform(x);
+
+kfold = KFold(n_splits = 5, shuffle = True); # Set to split de Data in 5 parts
+
+def test_model():
+    # logistic regression
+    modelLogistcReg = LogisticRegression(solver = 'liblinear', max_iter=10000);
+    scoreLogistcReg = cross_val_score(modelLogistcReg, x_normalized, y, cv=kfold, scoring='accuracy')
+
+    # knn
+    modelKNN = KNeighborsClassifier(n_neighbors = 5);
+    scoreKNN = cross_val_score(modelKNN, x_normalized, y, cv=kfold, scoring='accuracy')
+
+    # naive bayes
+    modelNaiveBayes = GaussianNB();
+    scoreNaiveBayes = cross_val_score(modelNaiveBayes, x_normalized, y, cv=kfold, scoring='accuracy')
+
+    # decision tree
+    modelDecisionTree = DecisionTreeClassifier(max_depth=10);
+    scoreDecisionTree = cross_val_score(modelDecisionTree, x_normalized, y, cv=kfold, scoring='accuracy')
+
+    allScores = [
+        {
+            "name": "LogisticRegression",
+            "score": scoreLogistcReg.mean()
+        },
+        {
+            "name": "KNN",
+            "score": scoreKNN.mean()
+        },
+        {
+            "name": "NaiveBayes",
+            "score": scoreNaiveBayes.mean()
+        },
+        {
+            "name": "DecisionTree",
+            "score": scoreDecisionTree.mean()
+        }
+    ]
+
+    print(allScores)
+
+    bestScore = 0
+    nameOfBestScore = "";
+    for index, score in enumerate(allScores):
+        if score["score"] > bestScore:
+            bestScore = score["score"];
+            nameOfBestScore = allScores[index]["name"]
+
+    print("Best Model: ", nameOfBestScore);
+    print("Result: ", bestScore);
+
+test_model();
