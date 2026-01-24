@@ -3,7 +3,7 @@
 # 4) Dados missing - preencher com media ou mediana em casos de falta de preenchimento OK
 # 5) Remover variaveis se elas são correlatas OK
 # 6) Remover variavel se não fizer sentido OK
-# 7) Verificar se existem outliers
+# 7) Verificar se existem outliers OK
 # 8) Aplicar maxClassifier pra padronizar os dados pro KNN
 # 9) Dividir dados de treino e teste em Kfold
 # 10) Aplicar gridSearchCv pra testar diferentes parametros
@@ -49,8 +49,8 @@ encode_binary_columns();
 numeric_data = file_filtered.select_dtypes(include=['number']);
 # print(numeric_data.corr());
 
-plt.figure(figsize=(10,10));
-sns.heatmap(numeric_data.corr());
+#plt.figure(figsize=(10,10));
+#sns.heatmap(numeric_data.corr());
 # plt.show();
 
 # Removing cases with correlation a lot
@@ -71,15 +71,25 @@ file_filtered.drop('Style', axis = 1, inplace = True);
 percentOfDataMissingEachColumn = (file_filtered.isnull().sum() / file.shape[0]) * 100;
 print(percentOfDataMissingEachColumn);
 
-# MashThickness > use average
-# PitchRate > use average
-# PrimaryTemp > use average
+# verify outliers
+# file_filtered.boxplot(column = 'MashThickness')
+# plt.show();
+
+# file_filtered.boxplot(column = 'PitchRate')
+# plt.show();
+
+# file_filtered.boxplot(column = 'PrimaryTemp')
+#plt.show();
+
+# MashThickness > use median because has outliers
+# PitchRate > use median because has outliers
+# PrimaryTemp > use median because has outliers
 # PrimingMethod > remove (muito poluída, com diferentes formatos e muito NA)
 # PrimingAmount > remove (muito poluída, com diferentes formatos e muito NA)
 
-file_filtered["MashThickness"] = file_filtered["MashThickness"].fillna(file_filtered["MashThickness"].mean());
-file_filtered["PrimaryTemp"] = file_filtered["PrimaryTemp"].fillna(file_filtered["PrimaryTemp"].mean());
-file_filtered["PitchRate"] = file_filtered["PitchRate"].fillna(file_filtered["PitchRate"].mean());
+file_filtered["MashThickness"] = file_filtered["MashThickness"].fillna(file_filtered["MashThickness"].median());
+file_filtered["PrimaryTemp"] = file_filtered["PrimaryTemp"].fillna(file_filtered["PrimaryTemp"].median());
+file_filtered["PitchRate"] = file_filtered["PitchRate"].fillna(file_filtered["PitchRate"].median());
 
 file_filtered.drop('PrimingAmount', axis = 1, inplace = True);
 file_filtered.drop('PrimingMethod', axis = 1, inplace = True);
